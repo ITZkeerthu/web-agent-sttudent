@@ -1,0 +1,29 @@
+[Unit]
+Description=Student Benefits Scraper
+After=network.target
+
+[Service]
+Type=simple
+User=scraper
+WorkingDirectory=/opt/student-scraper
+Environment=PYTHONPATH=/opt/student-scraper
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=/opt/student-scraper/.env
+ExecStart=/opt/student-scraper/venv/bin/python -m engine
+Restart=always
+RestartSec=60
+StandardOutput=journal
+StandardError=journal
+
+# Resource limits
+MemoryMax=512M
+CPUQuota=50%
+
+# Security
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/student-scraper
+
+[Install]
+WantedBy=multi-user.target
