@@ -56,12 +56,12 @@ class MultiFactorScorer:
             for term in terms
         }
     
-    def _compile_program_patterns(self, phrases: List[str]) -> List[re.Pattern]:
-        """Compile multi-word phrase patterns."""
-        return [
-            re.compile(rf'\b{re.escape(phrase)}\b', re.IGNORECASE)
+    def _compile_program_patterns(self, phrases: List[str]) -> Dict[str, re.Pattern]:
+        """Compile multi-word phrase patterns, keyed by the readable phrase."""
+        return {
+            phrase: re.compile(rf'\b{re.escape(phrase)}\b', re.IGNORECASE)
             for phrase in phrases
-        ]
+        }
     
     def _build_synonym_map(self) -> Dict[str, Set[str]]:
         """Build expansion map from synonym graph."""
@@ -107,13 +107,11 @@ class MultiFactorScorer:
         
         # 3. Program phrase matches (higher weight - exact phrases)
         found_phrases = set()
-        for pattern in self._program_patterns:
-            if pattern.search(text):
-                found_phrases.add(pattern.pattern)
-            elif pattern.search(title):
-                found_phrases.add(pattern.pattern)
+        for phrase, pattern in self._program_patterns.items():
+            if pattern.search(text) or pattern.search(title):
+                found_phrases.add(phrase)
         
-        matches['program_phrases'] = list(found_phrases)
+        matches['program_phrases'] = sorted(found_phrases)
         score += len(found_phrases) * ScoringWeights.PROGRAM_PHRASE_MATCH
         
         # 4. Synonym expansion bonus (only if core term not matched)
