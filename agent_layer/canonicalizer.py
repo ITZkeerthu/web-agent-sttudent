@@ -37,8 +37,11 @@ class URLCanonicalizer:
         
         url = url.strip()
         
-        # Parse URL
-        parsed = urlparse(url)
+        # Parse URL (malformed URLs such as "http://[bad" raise ValueError)
+        try:
+            parsed = urlparse(url)
+        except ValueError:
+            return ("", "")
         
         # Lowercase scheme and netloc
         scheme = parsed.scheme.lower()
@@ -110,8 +113,11 @@ class URLCanonicalizer:
         self._seen_hashes.add(url_hash)
     
     def extract_domain(self, url: str) -> str:
-        """Extract domain from URL."""
-        parsed = urlparse(url)
+        """Extract domain from URL ("" if the URL is malformed)."""
+        try:
+            parsed = urlparse(url)
+        except ValueError:
+            return ""
         domain = parsed.netloc.lower()
         if domain.startswith('www.'):
             domain = domain[4:]
@@ -119,8 +125,11 @@ class URLCanonicalizer:
     
     def is_valid_url(self, url: str) -> bool:
         """Basic URL validation."""
-        parsed = urlparse(url)
-        return (
+        try:
+            parsed = urlparse(url)
+        except ValueError:
+            return False
+        return bool(
             parsed.scheme in ('http', 'https') and
             parsed.netloc and
             '.' in parsed.netloc
