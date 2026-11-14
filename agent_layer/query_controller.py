@@ -2,7 +2,9 @@
 Query Budget Controller
 Controls query volume, randomizes selection, tracks yield.
 """
+import asyncio
 import random
+import re
 from typing import List, Dict, Tuple
 from dataclasses import dataclass, field
 from collections import defaultdict
@@ -138,9 +140,14 @@ class QueryBudgetController:
         else:
             q.consecutive_zero_yields = 0
         
-        # Update database (async task)
-        import asyncio
-        asyncio.create_task(self.db.update_keyword_yield(query, new_yield - current_yield))
+        # Update database (async task). update_yield is synchronous, so only
+        # schedule the write when an event loop is running; otherwise the
+        # in-memory score is still updated and no coroutine is leaked.
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            return
+        loop.create_task(self.db.update_keyword_yield(query, new_yield - current_yield))
     
     def expand_with_synonyms(self, query: str) -> List[str]:
         """
@@ -153,7 +160,8 @@ class QueryBudgetController:
             if word in SYNONYM_GRAPH:
                 synonyms = SYNONYM_GRAPH[word]
                 for syn in synonyms[:3]:  # Max 3 synonyms per word
-                    new_query = query.replace(word, syn)
+                    # Whole-word replacement so e.g. "offer" does not alter "offers"
+                    new_query = re.sub(rf"\b{re.escape(word)}\b", syn, query, flags=re.IGNORECASE)
                     expansions.append(new_query)
         
         return expansions[:3]  # Max 3 expansions
