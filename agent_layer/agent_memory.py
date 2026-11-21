@@ -4,7 +4,7 @@ Provides the agent with awareness of what has happened, what's working,
 and what needs attention.
 """
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 from dataclasses import dataclass, field
 
@@ -115,7 +115,7 @@ class AgentMemory:
         """Record an agent decision for context."""
         entry = {
             "cycle": self.state.cycle_number,
-            "time": datetime.utcnow().isoformat(),
+            "time": datetime.now(timezone.utc).replace(tzinfo=None).isoformat(),
             **decision,
         }
         self._decision_log.append(entry)
