@@ -122,6 +122,12 @@ SYNONYM_GRAPH = {
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
 
+# TLS certificate verification is on by default. Set ALLOW_INSECURE_SSL=1 only
+# for environments with a TLS-intercepting proxy that cannot be trusted properly.
+ALLOW_INSECURE_SSL = os.getenv("ALLOW_INSECURE_SSL", "").strip().lower() in ("1", "true", "yes")
+# Value for aiohttp's `ssl=` argument: None = default verification, False = disabled.
+SSL_VERIFY_ARG = False if ALLOW_INSECURE_SSL else None
+
 # DuckDuckGo HTML endpoint
 DDG_URL = "https://html.duckduckgo.com/html/"
 

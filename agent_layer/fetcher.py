@@ -12,7 +12,7 @@ from urllib.parse import urlparse
 import aiohttp
 from bs4 import BeautifulSoup
 
-from config import Timing, Limits
+from config import Timing, Limits, SSL_VERIFY_ARG
 from canonicalizer import canonicalizer
 
 
@@ -74,7 +74,7 @@ class ContentFetcher:
                     # Enforce rate limit per worker
                     await asyncio.sleep(1.0 / Timing.REQUESTS_PER_SECOND_PER_WORKER)
                     
-                    async with session.get(url, ssl=False) as response:
+                    async with session.get(url, ssl=SSL_VERIFY_ARG) as response:
                         if response.status == 200:
                             html = await response.text()
                             return {

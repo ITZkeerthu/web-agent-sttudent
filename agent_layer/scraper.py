@@ -12,7 +12,7 @@ import re
 import aiohttp
 from bs4 import BeautifulSoup
 
-from config import DDG_URL, USER_AGENTS, Timing, Limits
+from config import DDG_URL, USER_AGENTS, Timing, Limits, SSL_VERIFY_ARG
 
 
 class ScrapingError(Exception):
@@ -164,7 +164,7 @@ class DuckDuckGoScraper:
                 DDG_URL,
                 data=payload,
                 headers=headers,
-                ssl=False  # Some environments need this
+                ssl=SSL_VERIFY_ARG
             ) as response:
                 
                 status = response.status
